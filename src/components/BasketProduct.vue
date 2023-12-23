@@ -29,7 +29,7 @@
       </button>
     </div>
 
-    <b class="product__price"> {{ item.price }} ₽ </b>
+    <b class="product__price"> {{ numberFormat(item.price) }} ₽ </b>
 
     <button class="product__del button-del" type="button" aria-label="Удалить товар из корзины">
       <svg width="20" height="20" fill="currentColor">
@@ -40,6 +40,7 @@
 </template>
 <script setup>
 import { ref } from 'vue'
+import { numberFormat } from '@/helpers'
 const props = defineProps(['item'])
 const quantity = ref(props.item.quantity)
 </script>
