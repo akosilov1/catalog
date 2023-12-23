@@ -31,7 +31,12 @@
 
     <b class="product__price"> {{ numberFormat(item.price) }} ₽ </b>
 
-    <button class="product__del button-del" type="button" aria-label="Удалить товар из корзины">
+    <button
+      class="product__del button-del"
+      type="button"
+      @click="delProd"
+      aria-label="Удалить товар из корзины"
+    >
       <svg width="20" height="20" fill="currentColor">
         <use xlink:href="#icon-close"></use>
       </svg>
@@ -41,6 +46,12 @@
 <script setup>
 import { ref } from 'vue'
 import { numberFormat } from '@/helpers'
+import { basketStore } from '@/store/basket'
+const store = basketStore()
 const props = defineProps(['item'])
 const quantity = ref(props.item.quantity)
+
+function delProd() {
+  store.delete(props.item.id)
+}
 </script>

@@ -50,6 +50,18 @@ export const basketStore = defineStore('basket', {
       }).then((rez) => {
         this.basket = rez.data.items
       })
+    },
+    delete(productId) {
+      return axios({
+        url: config.apiUrl + '/baskets/products',
+        method: 'delete',
+        params: { userAccessKey: this.accessKey },
+        data: { basketItemId: productId }
+      }).then((rez) => {
+        if (rez.data.items) {
+          this.basket = rez.data.items
+        }
+      })
     }
   }
 })
