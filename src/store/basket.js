@@ -5,7 +5,7 @@ import { defineStore } from 'pinia'
 export const basketStore = defineStore('basket', {
   state: () => ({
     basket: [],
-    errors: [],
+    errors: '',
     accessKey: null
   }),
   getters: {
@@ -13,8 +13,9 @@ export const basketStore = defineStore('basket', {
       return this.basket.length
     },
     summ() {
-      let summ = 0
-      this.basket.reduce((summ, item) => (summ += item.price * item.quantity))
+      const summ = this.basket.reduce((acc, item) => {
+        return acc + item.price * item.quantity
+      }, 0)
       return summ
     }
   },
@@ -38,6 +39,7 @@ export const basketStore = defineStore('basket', {
             this.errors = rez.data.error
           }
         })
+        .catch((error) => (this.errors = error))
     },
     get() {
       if (!this.accessKey) {
@@ -47,9 +49,11 @@ export const basketStore = defineStore('basket', {
         params: {
           userAccessKey: this.accessKey
         }
-      }).then((rez) => {
-        this.basket = rez.data.items
       })
+        .then((rez) => {
+          this.basket = rez.data.items
+        })
+        .catch((error) => (this.errors = error))
     },
     delete(productId) {
       return axios({
@@ -57,11 +61,13 @@ export const basketStore = defineStore('basket', {
         method: 'delete',
         params: { userAccessKey: this.accessKey },
         data: { basketItemId: productId }
-      }).then((rez) => {
-        if (rez.data.items) {
-          this.basket = rez.data.items
-        }
       })
+        .then((rez) => {
+          if (rez.data.items) {
+            this.basket = rez.data.items
+          }
+        })
+        .catch((error) => (this.errors = error))
     }
   }
 })
