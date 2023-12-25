@@ -55,6 +55,24 @@ export const basketStore = defineStore('basket', {
         })
         .catch((error) => (this.errors = error))
     },
+    update(productId, quantity) {
+      return axios({
+        url: config.apiUrl + '/baskets/products',
+        method: 'put',
+        params: { userAccessKey: this.accessKey },
+        data: { basketItemId: productId, quantity }
+      })
+        .then((rez) => {
+          if (rez.data.items) {
+            this.basket = rez.data.items
+          }
+        })
+
+        .catch((err) => {
+          console.log(err)
+          this.errors = err
+        })
+    },
     delete(productId) {
       return axios({
         url: config.apiUrl + '/baskets/products',

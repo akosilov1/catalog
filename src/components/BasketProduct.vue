@@ -1,5 +1,5 @@
 <template>
-  <li class="cart__item product">
+  <li class="cart__item product" v-if="item">
     <div class="product__pic">
       <img :src="item.color.gallery[0].file.url" width="120" height="120" :alt="item.title" />
     </div>
@@ -7,7 +7,7 @@
     <p class="product__info product__info--color">
       Цвет:
       <span>
-        <i :style="{ backgroundColor: item.color.color.code }"></i>
+        <i :style="{ 'background-color': item.color.color.code }"></i>
         {{ item.color.color.title }}
       </span>
     </p>
@@ -20,7 +20,7 @@
         </svg>
       </button>
 
-      <input type="text" :value="quantity" name="count" />
+      <input type="text" v-model.number="quantity" name="count" />
 
       <button type="button" aria-label="Добавить один товар" @click="quantity++">
         <svg width="10" height="10" fill="currentColor">
@@ -44,13 +44,16 @@
   </li>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { numberFormat } from '@/helpers'
 import { basketStore } from '@/store/basket'
 const store = basketStore()
 const props = defineProps(['item'])
 const quantity = ref(props.item.quantity)
 
+watch(quantity, (value) => {
+  store.update(props.item.id, value)
+})
 function delProd() {
   store.delete(props.item.id)
 }

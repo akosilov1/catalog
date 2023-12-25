@@ -7,28 +7,39 @@ import config from '@/assets/config'
 import { numberFormat } from '@/helpers'
 const router = useRoute()
 const basket = basketStore()
+
+const toBasketOverlay = ref(false)
+let error = ref('')
+
+let product = ref([])
 const quantity = ref(1)
 const productSize = ref(null)
 const productColor = ref(null)
 
-let error = ref('')
-
-let product = ref([])
-
 axios.get(config.apiUrl + '/products/' + router.params.id).then((rez) => {
-  console.log(rez)
   product.value = rez.data
+  productSize.value = product.value.sizes[0].id
   productColor.value = product.value.colors[0].color.id
 })
 
 const currentImage = computed(() => {
   const color = product.value.colors.find((color) => color.color.id === productColor.value)
-  console.log('color', color)
   if (color && color.gallery) return color.gallery[0].file.url
   return false
 })
+
+const inBasket = computed(() => {
+  return basket.basket.find((item) => {
+    return (
+      item.product.id === product.value.id &&
+      productColor.value === item.color.color.id &&
+      productSize.value === item.size.id
+    )
+  })
+})
 function toBasket() {
   console.log(basket)
+  toBasketOverlay.value = true
   const data = {
     productId: product.value.id,
     colorId: productColor.value,
@@ -36,10 +47,15 @@ function toBasket() {
     quantity: quantity.value
   }
   error.value = ''
-  basket.add(data).catch((error) => {
-    console.log(error.response.data)
-    error.value = error.response.data
-  })
+  basket
+    .add(data)
+    .then(() => {
+      toBasketOverlay.value = false
+    })
+    .catch((error) => {
+      console.log(error.response.data)
+      error.value = error.response.data
+    })
 }
 </script>
 <template>
@@ -133,7 +149,7 @@ function toBasket() {
               <fieldset class="form__block">
                 <legend class="form__legend">Размер</legend>
                 <label class="form__label form__label--small form__label--select">
-                  <select class="form__select" type="text" v-model="productSize">
+                  <select class="form__select" v-model="productSize">
                     <option :value="size.id" v-for="size of product.sizes" :key="size.id">
                       {{ size.title }}
                     </option>
@@ -142,7 +158,10 @@ function toBasket() {
               </fieldset>
             </div>
 
-            <button class="item__button button button--primery" type="submit">В корзину</button>
+            <button class="item__button button button--primery" :disabled="inBasket" type="submit">
+              {{ inBasket ? 'В корзине' : 'В корзину' }}
+            </button>
+            <p v-if="toBasketOverlay">Добавляем в корзину...</p>
             <p>{{ error }}</p>
           </form>
         </div>
