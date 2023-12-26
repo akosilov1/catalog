@@ -1,13 +1,48 @@
-<script setup></script>
+<script setup>
+import { basketStore } from '@/store/basket'
+import orderStore from '@/store/order'
+import { numberFormat } from '@/helpers'
+import { ref, computed } from 'vue'
+
+const order = orderStore()
+const basket = basketStore()
+
+order.getDelivery().then(() => {
+  order.getPayments(order.delivery[0].id)
+})
+
+const deliveries = computed(() => {
+  order.getPayments(orderData.value.delivery)
+  return order.delivery
+})
+
+const payments = computed(() => {
+  return order.payments
+})
+const orderData = ref({})
+
+function addOrder() {
+  const data = {
+    name: orderData.value.name,
+    address: orderData.value.address,
+    phone: orderData.value.phone,
+    email: orderData.value.email,
+    deliveryTypeId: orderData.value.delivery,
+    paymentTypeId: orderData.value.payment,
+    comment: orderData.value.comment
+  }
+  order.add(data)
+}
+</script>
 <template>
   <main class="content container">
     <div class="content__top">
       <ul class="breadcrumbs">
         <li class="breadcrumbs__item">
-          <a class="breadcrumbs__link" href="index.html"> Каталог </a>
+          <RouterLink :to="{ name: 'catalog' }" :class="'breadcrumbs__link'">Каталог</RouterLink>
         </li>
         <li class="breadcrumbs__item">
-          <a class="breadcrumbs__link" href="cart.html"> Корзина </a>
+          <RouterLink :to="{ name: 'basket' }" :class="'breadcrumbs__link'">Корзина</RouterLink>
         </li>
         <li class="breadcrumbs__item">
           <a class="breadcrumbs__link"> Оформление заказа </a>
@@ -20,14 +55,14 @@
     </div>
 
     <section class="cart">
-      <form class="cart__form form" action="#" method="POST">
+      <form class="cart__form form" action="#" method="POST" @submit="addOrder">
         <div class="cart__field">
           <div class="cart__data">
             <label class="form__label">
               <input
                 class="form__input"
                 type="text"
-                name="name"
+                v-model="orderData.name"
                 placeholder="Введите ваше полное имя"
               />
               <span class="form__value">ФИО</span>
@@ -37,7 +72,7 @@
               <input
                 class="form__input"
                 type="text"
-                name="address"
+                v-model="orderData.address"
                 placeholder="Введите ваш адрес"
               />
               <span class="form__value">Адрес доставки</span>
@@ -47,7 +82,7 @@
               <input
                 class="form__input"
                 type="tel"
-                name="phone"
+                v-model="orderData.phone"
                 placeholder="Введите ваш телефон"
               />
               <span class="form__value">Телефон</span>
@@ -55,14 +90,19 @@
             </label>
 
             <label class="form__label">
-              <input class="form__input" type="email" name="email" placeholder="Введи ваш Email" />
+              <input
+                class="form__input"
+                type="email"
+                v-model="orderData.email"
+                placeholder="Введи ваш Email"
+              />
               <span class="form__value">Email</span>
             </label>
 
             <label class="form__label">
               <textarea
                 class="form__input form__input--area"
-                name="comments"
+                v-model="orderData.comment"
                 placeholder="Ваши пожелания"
               ></textarea>
               <span class="form__value">Комментарий к заказу</span>
@@ -72,44 +112,34 @@
           <div class="cart__options">
             <h3 class="cart__title">Доставка</h3>
             <ul class="cart__options options">
-              <li class="options__item">
+              <li class="options__item" v-for="(deliv, index) of deliveries" :key="deliv.id">
                 <label class="options__label">
                   <input
                     class="options__radio sr-only"
                     type="radio"
-                    name="delivery"
-                    value="0"
-                    checked=""
+                    v-model="orderData.delivery"
+                    :checked="index === 0"
+                    :value="deliv.id"
                   />
-                  <span class="options__value"> Самовывоз <b>бесплатно</b> </span>
-                </label>
-              </li>
-              <li class="options__item">
-                <label class="options__label">
-                  <input class="options__radio sr-only" type="radio" name="delivery" value="500" />
-                  <span class="options__value"> Курьером <b>290 ₽</b> </span>
+                  <span class="options__value">
+                    {{ deliv.title }} <b>{{ deliv.price }}</b>
+                  </span>
                 </label>
               </li>
             </ul>
 
             <h3 class="cart__title">Оплата</h3>
             <ul class="cart__options options">
-              <li class="options__item">
+              <li class="options__item" v-for="(pay, index) of payments" :key="pay.id">
                 <label class="options__label">
                   <input
                     class="options__radio sr-only"
                     type="radio"
-                    name="pay"
-                    value="card"
-                    checked=""
+                    :value="pay.id"
+                    v-model="orderData.paymentTypeId"
+                    :checked="index === 0"
                   />
-                  <span class="options__value"> Картой при получении </span>
-                </label>
-              </li>
-              <li class="options__item">
-                <label class="options__label">
-                  <input class="options__radio sr-only" type="radio" name="pay" value="cash" />
-                  <span class="options__value"> Наличными при получении </span>
+                  <span class="options__value"> {{ pay.title }} </span>
                 </label>
               </li>
             </ul>
@@ -118,26 +148,19 @@
 
         <div class="cart__block">
           <ul class="cart__orders">
-            <li class="cart__order">
-              <h3>Смартфон Xiaomi Redmi Note 7 Pro 6/128GB</h3>
-              <b>990 ₽</b>
-              <span>Артикул: 150030</span>
-            </li>
-            <li class="cart__order">
-              <h3>Гироскутер Razor Hovertrax 2.0ii</h3>
-              <b>1 990 ₽</b>
-              <span>Артикул: 150030</span>
-            </li>
-            <li class="cart__order">
-              <h3>Электрический дрифт-карт Razor Lil’ Crazy</h3>
-              <b>4 090 ₽</b>
-              <span>Артикул: 150030</span>
+            <li class="cart__order" v-for="product of basket.basket" :key="product.id">
+              <h3>{{ product.product.title }}</h3>
+              <b>{{ product.price }} ₽</b>
+              <span>Артикул: {{ product.product.id }}</span>
             </li>
           </ul>
 
           <div class="cart__total">
             <p>Доставка: <b>бесплатно</b></p>
-            <p>Итого: <b>3</b> товара на сумму <b>4 070 ₽</b></p>
+            <p>
+              Итого: <b>{{ basket.count }}</b> товара на сумму
+              <b>{{ numberFormat(basket.summ) }} ₽</b>
+            </p>
           </div>
 
           <button class="cart__button button button--primery" type="submit">Оформить заказ</button>

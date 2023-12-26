@@ -2,7 +2,11 @@
 import { basketStore } from '@/store/basket'
 import BasketProduct from '@/components/BasketProduct.vue'
 import { numberFormat } from '@/helpers'
+import router from '@/router'
 const basket = basketStore()
+function orederCart() {
+  router.push({ name: 'order' })
+}
 </script>
 <template>
   <main class="content container">
@@ -23,7 +27,7 @@ const basket = basketStore()
     </div>
 
     <section class="cart">
-      <form class="cart__form form" action="#" method="POST">
+      <form class="cart__form form" action="#" method="POST" @submit.prevent="orederCart">
         <div class="cart__field">
           <ul class="cart__list">
             <BasketProduct :item="item" v-for="item in basket.basket" :key="item.id" />
@@ -35,7 +39,6 @@ const basket = basketStore()
           <p class="cart__price">
             Итого: <span>{{ numberFormat(basket.summ) }} ₽</span>
           </p>
-
           <button class="cart__button button button--primery" type="submit">Оформить заказ</button>
         </div>
       </form>

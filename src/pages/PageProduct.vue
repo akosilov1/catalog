@@ -2,9 +2,9 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { basketStore } from '@/store/basket'
+import { numberFormat } from '@/helpers'
 import axios from 'axios'
 import config from '@/assets/config'
-import { numberFormat } from '@/helpers'
 const router = useRoute()
 const basket = basketStore()
 
@@ -29,13 +29,12 @@ const currentImage = computed(() => {
 })
 
 const inBasket = computed(() => {
-  return basket.basket.find((item) => {
-    return (
+  return basket.basket.find(
+    (item) =>
       item.product.id === product.value.id &&
       productColor.value === item.color.color.id &&
       productSize.value === item.size.id
-    )
-  })
+  )
 })
 function toBasket() {
   console.log(basket)
