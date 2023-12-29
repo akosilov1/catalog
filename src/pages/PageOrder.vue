@@ -2,36 +2,18 @@
 import { basketStore } from '@/store/basket'
 import orderStore from '@/store/order'
 import { numberFormat } from '@/helpers'
-import { ref, computed } from 'vue'
+
+import OrderPayment from '@/components/OrderPayment.vue'
+import OrderDelivery from '@/components/OrderDelivery.vue'
+import FormInput from '@/components/FormInput.vue'
 
 const order = orderStore()
 const basket = basketStore()
 
-order.getDelivery().then(() => {
-  order.getPayments(order.delivery[0].id)
-})
-
-const deliveries = computed(() => {
-  order.getPayments(orderData.value.delivery)
-  return order.delivery
-})
-
-const payments = computed(() => {
-  return order.payments
-})
-const orderData = ref({})
+order.getDelivery()
 
 function addOrder() {
-  const data = {
-    name: orderData.value.name,
-    address: orderData.value.address,
-    phone: orderData.value.phone,
-    email: orderData.value.email,
-    deliveryTypeId: orderData.value.delivery,
-    paymentTypeId: orderData.value.payment,
-    comment: orderData.value.comment
-  }
-  order.add(data)
+  order.add()
 }
 </script>
 <template>
@@ -55,94 +37,29 @@ function addOrder() {
     </div>
 
     <section class="cart">
-      <form class="cart__form form" action="#" method="POST" @submit="addOrder">
+      <form class="cart__form form" action="#" method="POST" @submit.prevent="addOrder">
         <div class="cart__field">
           <div class="cart__data">
-            <label class="form__label">
-              <input
-                class="form__input"
-                type="text"
-                v-model="orderData.name"
-                placeholder="Введите ваше полное имя"
-              />
-              <span class="form__value">ФИО</span>
-            </label>
-
-            <label class="form__label">
-              <input
-                class="form__input"
-                type="text"
-                v-model="orderData.address"
-                placeholder="Введите ваш адрес"
-              />
-              <span class="form__value">Адрес доставки</span>
-            </label>
-
-            <label class="form__label">
-              <input
-                class="form__input"
-                type="tel"
-                v-model="orderData.phone"
-                placeholder="Введите ваш телефон"
-              />
-              <span class="form__value">Телефон</span>
-              <span class="form__error">Неверный формат телефона</span>
-            </label>
-
-            <label class="form__label">
-              <input
-                class="form__input"
-                type="email"
-                v-model="orderData.email"
-                placeholder="Введи ваш Email"
-              />
-              <span class="form__value">Email</span>
-            </label>
-
-            <label class="form__label">
-              <textarea
-                class="form__input form__input--area"
-                v-model="orderData.comment"
-                placeholder="Ваши пожелания"
-              ></textarea>
-              <span class="form__value">Комментарий к заказу</span>
-            </label>
+            <form-input type="text" name="name" placeholder="Введите ваше полное имя" title="ФИО" />
+            <form-input
+              type="text"
+              name="address"
+              placeholder="Введите ваш адрес"
+              title="Адрес доставки"
+            />
+            <form-input type="tel" name="phone" placeholder="Введите ваш телефон" title="Телефон" />
+            <form-input type="email" name="email" placeholder="Введи ваш Email" title="Email" />
+            <form-input
+              type="textarea"
+              name="comment"
+              placeholder="Ваши пожелания"
+              title="Комментарий к заказу"
+            />
           </div>
 
           <div class="cart__options">
-            <h3 class="cart__title">Доставка</h3>
-            <ul class="cart__options options">
-              <li class="options__item" v-for="(deliv, index) of deliveries" :key="deliv.id">
-                <label class="options__label">
-                  <input
-                    class="options__radio sr-only"
-                    type="radio"
-                    v-model="orderData.delivery"
-                    :checked="index === 0"
-                    :value="deliv.id"
-                  />
-                  <span class="options__value">
-                    {{ deliv.title }} <b>{{ deliv.price }}</b>
-                  </span>
-                </label>
-              </li>
-            </ul>
-
-            <h3 class="cart__title">Оплата</h3>
-            <ul class="cart__options options">
-              <li class="options__item" v-for="(pay, index) of payments" :key="pay.id">
-                <label class="options__label">
-                  <input
-                    class="options__radio sr-only"
-                    type="radio"
-                    :value="pay.id"
-                    v-model="orderData.paymentTypeId"
-                    :checked="index === 0"
-                  />
-                  <span class="options__value"> {{ pay.title }} </span>
-                </label>
-              </li>
-            </ul>
+            <order-delivery />
+            <order-payment />
           </div>
         </div>
 
